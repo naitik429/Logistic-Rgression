@@ -7,47 +7,59 @@ Original file is located at
     https://colab.research.google.com/drive/1fi15DcVRxjGZZxihZPWfAHjvcnd1sMni
 """
 
-import streamlit as st
-import pandas as pd
 import joblib
+import pandas as pd
+import streamlit as st
 
 model = joblib.load('logistic_model.pkl')
 st.title('Titanic survival prediction model')
 st.write('Enter passenger details to predict survival')
 
-#user inputs
+# user inputs
 
-Pclass = st.selectbox('Passenger Class',[1, 2, 3])
-Sex = st.selectbox('Sex',['male', 'female'])
-Age = st.slider('Age', 0, 80,25)
-SibSp=st.number_input('number of siblings/spouses:', min_value = 0, max_value = 10, value = 0 )
-Parch	=st.number_input('number of parents/children:' ,min_value = 0, max_value = 10, value = 0 )
-Fare	=st.number_input('Fare paid:', min_value = 0, max_value = 1000, value = 0 )
-Embarked = st.selectbox('Embarked',['S', 'C', 'Q'])
+Pclass = st.selectbox('Passenger Class', [1, 2, 3])
+Sex = st.selectbox('Sex', ['male', 'female'])
+Age = st.slider('Age', 0, 80, 25)
+SibSp = st.number_input(
+    'number of siblings/spouses:', min_value=0, max_value=10, value=0
+)
+Parch = st.number_input(
+    'number of parents/children:', min_value=0, max_value=10, value=0
+)
+Fare = st.number_input('Fare paid:', min_value=0, max_value=1000, value=0)
+Embarked = st.selectbox('Embarked', ['S', 'C', 'Q'])
 
 
 sex_encode = 1 if Sex == 'female' else 0
 Embarked_encode_S = 1 if Embarked == 'S' else 0
 Embarked_encode_Q = 1 if Embarked == 'Q' else 0
 
-
-input_data = pd.DataFrame({
-    'Pclass': Pclass,
-    'Sex': sex_encode,
-    'Age': Age,
-    'SibSp': SibSp,
-    'Parch': Parch,
-    'Fare': Fare,
-    'Embarked_S': Embarked_encode_S,
-    'Embarked_Q': Embarked_encode_Q
-})
+# FIXED: Wrapped every value in brackets [] to provide a valid DataFrame index
+input_data = pd.DataFrame(
+    {
+        'Pclass': [Pclass],
+        'Sex': [sex_encode],
+        'Age': [Age],
+        'SibSp': [SibSp],
+        'Parch': [Parch],
+        'Fare': [Fare],
+        'Embarked_S': [Embarked_encode_S],
+        'Embarked_Q': [Embarked_encode_Q],
+    }
+)
 
 
 if st.button('Predict'):
-    prediction = model.predict(input_data)
-    prediction_proba = model.predict_proba(input_data)
-    st.write('Prediction Probability:', prediction_proba)
-    if prediction[0] == 1:
-        st.write(f'Survived {prediction_proba:.2%}')
-    else:
-        st.write(f'Not Survived: {prediction_proba:.2%}')
+  prediction = model.predict(input_data)
+  prediction_proba = model.predict_proba(input_data)
+
+  st.write('Prediction Probability:', prediction_proba)
+
+  # FIXED: Extracting the specific probability value for the correct class
+  survived_prob = prediction_proba[0][1]
+  not_survived_prob = prediction_proba[0][0]
+
+  if prediction[0] == 1:
+    st.write(f'Survived with probability: {survived_prob:.2%}')
+  else:
+    st.write(f'Not Survived with probability: {not_survived_prob:.2%}')
