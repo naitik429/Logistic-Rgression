@@ -16,7 +16,6 @@ st.title('Titanic survival prediction model')
 st.write('Enter passenger details to predict survival')
 
 # user inputs
-
 Pclass = st.selectbox('Passenger Class', [1, 2, 3])
 Sex = st.selectbox('Sex', ['male', 'female'])
 Age = st.slider('Age', 0, 80, 25)
@@ -29,12 +28,10 @@ Parch = st.number_input(
 Fare = st.number_input('Fare paid:', min_value=0, max_value=1000, value=0)
 Embarked = st.selectbox('Embarked', ['S', 'C', 'Q'])
 
-
 sex_encode = 1 if Sex == 'female' else 0
 Embarked_encode_S = 1 if Embarked == 'S' else 0
 Embarked_encode_Q = 1 if Embarked == 'Q' else 0
 
-# FIXED: Wrapped every value in brackets [] to provide a valid DataFrame index
 input_data = pd.DataFrame(
     {
         'Pclass': [Pclass],
@@ -48,14 +45,12 @@ input_data = pd.DataFrame(
     }
 )
 
-
 if st.button('Predict'):
-  prediction = model.predict(input_data)
-  prediction_proba = model.predict_proba(input_data)
+  # FIXED: Using .values converts the dataframe into a raw array,
+  # bypassing the strict column name checks that were throwing the error.
+  prediction = model.predict(input_data.values)
+  prediction_proba = model.predict_proba(input_data.values)
 
-  st.write('Prediction Probability:', prediction_proba)
-
-  # FIXED: Extracting the specific probability value for the correct class
   survived_prob = prediction_proba[0][1]
   not_survived_prob = prediction_proba[0][0]
 
